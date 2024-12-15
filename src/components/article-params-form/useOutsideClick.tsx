@@ -1,25 +1,22 @@
 import { useEffect } from 'react';
 
 export const useOutsideClick = (
-	ref: React.RefObject<HTMLElement>,
+	ref: React.RefObject<HTMLElement> | null,
 	callback: () => void,
-	active: boolean
+	isActive: boolean
 ) => {
 	useEffect(() => {
+		if (!isActive || !ref?.current) return; // Останавливаем эффект, если форма закрыта или ref отсутствует
+
 		const handleClickOutside = (event: MouseEvent) => {
-			if (
-				active &&
-				ref.current &&
-				!ref.current.contains(event.target as Node)
-			) {
+			if (ref.current && !ref.current.contains(event.target as Node)) {
 				callback();
 			}
 		};
 
 		document.addEventListener('mousedown', handleClickOutside);
-
 		return () => {
 			document.removeEventListener('mousedown', handleClickOutside);
 		};
-	}, [ref, callback, active]);
+	}, [ref, callback, isActive]); // Эффект пересчитывается только при изменении зависимости isActive
 };

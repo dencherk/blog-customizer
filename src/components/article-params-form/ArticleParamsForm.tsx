@@ -15,13 +15,12 @@ import {
 	OptionType,
 } from 'src/constants/articleProps';
 import { FormEvent, useRef, useState } from 'react';
-import { clsx } from 'clsx';
 import { useOutsideClick } from './useOutsideClick';
 
 import styles from './ArticleParamsForm.module.scss';
 
 type TArticleProps = {
-	articleState: ArticleStateType; // Добавьте это
+	articleState: ArticleStateType;
 	setArticleState: (value: ArticleStateType) => void;
 	resetButton: () => void;
 	submitButton: (event: FormEvent) => void;
@@ -29,7 +28,7 @@ type TArticleProps = {
 
 export const ArticleParamsForm = ({ setArticleState }: TArticleProps) => {
 	// Состояние для управления открытием и закрытием сайдбара
-	const [isOpen, setIsOpen] = useState<boolean>(false);
+	const [isMenuOpen, setIsMenuOpen] = useState<boolean>(false);
 	// Ссылка на форму для определения кликов вне сайдбара
 	const formRef = useRef<HTMLFormElement | null>(null);
 	// Состояние текущих настроек статьи
@@ -37,7 +36,11 @@ export const ArticleParamsForm = ({ setArticleState }: TArticleProps) => {
 		useState<ArticleStateType>(defaultArticleState);
 
 	// Хук для обработки кликов вне сайдбара
-	useOutsideClick(formRef, () => setIsOpen(false), isOpen);
+	useOutsideClick(
+		isMenuOpen ? formRef : null, // Передаем ref только если меню открыто
+		() => setIsMenuOpen(false),
+		isMenuOpen
+	);
 
 	// Универсальный обработчик изменений состояния
 	const updateSetting = (key: keyof ArticleStateType, value: OptionType) => {
@@ -60,19 +63,18 @@ export const ArticleParamsForm = ({ setArticleState }: TArticleProps) => {
 		<>
 			{/* Кнопка открытия/закрытия сайдбара */}
 			<ArrowButton
-				isOpen={isOpen}
+				isOpen={isMenuOpen}
 				onClick={() => {
-					setIsOpen(!isOpen);
+					setIsMenuOpen(!isMenuOpen);
 				}}
 			/>
 			{/* Сайдбар с настройками */}
 			<aside
-				className={clsx(styles.container, isOpen && styles.container_open)}>
-				<form
-					ref={formRef}
-					className={styles.form}
-					onSubmit={submitForm}
-					onReset={resetForm}>
+				ref={formRef}
+				className={`${styles.container} ${
+					isMenuOpen ? styles.container_open : ''
+				}`}>
+				<form className={styles.form} onSubmit={submitForm} onReset={resetForm}>
 					{/* Заголовок формы */}
 					<Text size={31} weight={800} uppercase={true}>
 						Задайте параметры
